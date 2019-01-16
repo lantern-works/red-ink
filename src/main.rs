@@ -14,6 +14,7 @@ use embedded_graphics::prelude::*;
 use embedded_graphics::Drawing;
 use std::{env, io};
 use std::io::Write;
+use std::time::{Duration, Instant};
 
 // Font
 extern crate profont;
@@ -155,7 +156,11 @@ fn main() -> Result<(), std::io::Error> {
       Coord::new(2, 4 + 14 + 4 + 14),
     ];
 
+    let mut render_start = Instant::now();
+    let mut last_render_time = Duration::new(0, 1);
+
     loop {
+        render_start = Instant::now();
         while messages.iter().count() > 3 {
             messages.pop();
             display.reset(&mut delay).expect("error resetting display");
@@ -181,6 +186,14 @@ fn main() -> Result<(), std::io::Error> {
               .translate(coords[2])
               .into_iter(),
             );
+            let pretty_time = format!(" {} seconds", last_render_time.as_secs().to_string());
+            display.draw(
+              ProFont14Point::render_str(&pretty_time)
+              .with_stroke(Some(Color::White))
+              .with_fill(Some(Color::Black))
+              .translate(Coord::new(84, 84))
+              .into_iter(),
+            );
             display.update(&mut delay).expect("error updating display");
             println!("Update...");
         }
@@ -190,6 +203,7 @@ fn main() -> Result<(), std::io::Error> {
 
         print!("> ");
         io::stdout().flush().unwrap();
+        last_render_time = Instant::now() - render_start;
 
         let mut input = String::new();
         // this string needs to live as long as it is referenced by messages
