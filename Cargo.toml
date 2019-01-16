@@ -1,0 +1,9 @@
+[package]
+name = "red-ink"
+version = "0.1.0"
+authors = ["Jonathan Dahan <hi@jonathan.is>"]
+edition = "2018"
+
+[dependencies]
+ssd1675 = "0.1.0"
+websocket = "0.22.2"
