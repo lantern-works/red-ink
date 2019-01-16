@@ -153,7 +153,7 @@ fn main() -> Result<(), std::io::Error> {
     let coords: [Coord; 3] = [
       Coord::new(2, 4),
       Coord::new(2, 4 + 14 + 4),
-      Coord::new(2, 4 + 14 + 4 + 14),
+      Coord::new(2, 4 + 14 + 4 + 14 + 4),
     ];
 
     let mut render_start = Instant::now();
@@ -206,11 +206,9 @@ fn main() -> Result<(), std::io::Error> {
         last_render_time = Instant::now() - render_start;
 
         let mut input = String::new();
-        // this string needs to live as long as it is referenced by messages
         match io::stdin().read_line(&mut input) {
             Ok(_) => {
               messages.insert(0, input.trim().to_string());
-              println!();
             },
             Err(error) => println!("error: {}", error),
         }
