@@ -9,4 +9,8 @@ run locally on the pi
 
 cross compile from macos for pi zero
 
-    cross build --target=arm-unknown-linux-gnueabihf --release
+    make build
+
+build, upload, and run on the lantern
+
+    make
