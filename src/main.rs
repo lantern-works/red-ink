@@ -47,6 +47,27 @@ const LUT_YELLOW: [u8; 70] = [
     0,    0,    0,    0,    0,
 ];
 
+#[rustfmt::skip]
+const LUT_FAST_YELLOW: [u8; 70] = [
+    // Phase 0     Phase 1     Phase 2     Phase 3     Phase 4     Phase 5     Phase 6
+    // A B C D     A B C D     A B C D     A B C D     A B C D     A B C D     A B C D
+    0b11111010, 0b10010100, 0b10001100, 0b11000000, 0b11010000,  0b00000000, 0b00000000,  // LUT0 - Black
+    0b11111010, 0b10010100, 0b00101100, 0b10000000, 0b11100000,  0b00000000, 0b00000000,  // LUTT1 - White
+    0b11111010, 0b00000000, 0b00000000, 0b00000000, 0b00000000,  0b00000000, 0b00000000,  // IGNORE
+    0b11111010, 0b10010100, 0b11111000, 0b10000000, 0b01010000,  0b00000000, 0b11001100,  // LUT3 - Yellow (or Red)
+    0b10111111, 0b01011000, 0b11111100, 0b10000000, 0b11010000,  0b00000000, 0b00010001,  // LUT4 - VCOM
+
+    // Duration            | Repeat
+    // A   B     C     D   |
+    64,   16,   64,   16,   4,
+    8,    16,   4,    4,    8,
+    8,    8,    3,    8,    16,
+    8,    4,    0,    0,    8,
+    16,   8,    8,    0,    16,
+    0,    0,    0,    0,    0,
+    0,    0,    0,    0,    0,
+];
+
 fn main() -> Result<(), std::io::Error> {
     // Configure SPI
     let mut spi = Spidev::open("/dev/spidev0.0").expect("SPI device");
@@ -98,7 +119,7 @@ fn main() -> Result<(), std::io::Error> {
             cols: COLS,
         })
         .rotation(Rotation::Rotate270)
-        .lut(&LUT_YELLOW)
+        .lut(&LUT_FAST_YELLOW)
         .yellow(&true)
         .build()
         .expect("invalid configuration");
@@ -136,46 +157,32 @@ fn main() -> Result<(), std::io::Error> {
 
     loop {
         while messages.iter().count() > 3 {
-            if let Some(last_message) = messages.pop() {
-              display.draw(
-                ProFont14Point::render_str(&last_message)
-                .with_stroke(Some(Color::White))
-                .translate(coords[0])
-                .into_iter(),
-              );
-              display.draw(
-                ProFont14Point::render_str(&messages[0])
-                .with_stroke(Some(Color::Black))
-                .translate(coords[0])
-                .into_iter(),
-              );
-              display.draw(
-                ProFont14Point::render_str(&messages[0])
-                .with_stroke(Some(Color::White))
-                .translate(coords[1])
-                .into_iter(),
-              );
-              display.draw(
-                ProFont14Point::render_str(&messages[1])
-                .with_stroke(Some(Color::Black))
-                .translate(coords[1])
-                .into_iter(),
-              );
-              display.draw(
-                ProFont14Point::render_str(&messages[1])
-                .with_stroke(Some(Color::White))
-                .translate(coords[2])
-                .into_iter(),
-              );
-              display.draw(
-                ProFont14Point::render_str(&messages[2])
-                .with_stroke(Some(Color::Black))
-                .translate(coords[2])
-                .into_iter(),
-              );
-              display.update(&mut delay).expect("error updating display");
-              println!("Update...");
-            }
+            messages.pop();
+            display.reset(&mut delay).expect("error resetting display");
+            display.clear(Color::White);
+            display.draw(
+              ProFont14Point::render_str(&messages[0])
+              .with_stroke(Some(Color::Black))
+              .with_fill(Some(Color::White))
+              .translate(coords[0])
+              .into_iter(),
+            );
+            display.draw(
+              ProFont14Point::render_str(&messages[1])
+              .with_stroke(Some(Color::Black))
+              .with_fill(Some(Color::White))
+              .translate(coords[1])
+              .into_iter(),
+            );
+            display.draw(
+              ProFont14Point::render_str(&messages[2])
+              .with_stroke(Some(Color::Black))
+              .with_fill(Some(Color::White))
+              .translate(coords[2])
+              .into_iter(),
+            );
+            display.update(&mut delay).expect("error updating display");
+            println!("Update...");
         }
 
         println!("Finished - going to sleep");
