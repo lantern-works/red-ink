@@ -1,6 +1,10 @@
+REDINK := red-ink/arm-unknown-linux-gnueabihf
 .PHONY: all build upload run
 
-all: build upload run
+all: image build upload run
+
+image:
+	docker build -t $(REDINK) .
 
 build:
 	cross build --target=arm-unknown-linux-gnueabihf --release

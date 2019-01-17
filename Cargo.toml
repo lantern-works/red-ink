@@ -9,4 +9,4 @@ ssd1675 = { git = "https://github.com/jedahan/ssd1675", branch = "yellow" }
 linux-embedded-hal = "0.2.2"
 profont = "0.1.0"
 embedded-graphics = "0.4.5"
-#websocket = "0.22.2"
+websocket = "0.22.2"
