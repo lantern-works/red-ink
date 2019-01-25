@@ -117,7 +117,7 @@ fn main() -> Result<(), std::io::Error> {
         .skip(1)
         .collect::<Vec<String>>()
         .join(" ")
-        .split("\n")
+        .split(",")
         .map(String::from) // allocations!
         .collect::<Vec<String>>()
     } else {
