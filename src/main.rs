@@ -112,7 +112,14 @@ fn main() -> Result<(), std::io::Error> {
     display.clear(Color::White);
     println!("Clear");
 
-    let mut messages = if env::args().count() > 1 {
+    let interactive = env::args().count() == 1;
+
+    let mut messages = if interactive {
+      vec!["interactive", "mode", "use", "stdin"]
+        .into_iter() // allocations!
+        .map(String::from) // allocations!
+        .collect()
+    } else {
       env::args()
         .skip(1)
         .collect::<Vec<String>>()
@@ -120,76 +127,64 @@ fn main() -> Result<(), std::io::Error> {
         .split(",")
         .map(String::from) // allocations!
         .collect::<Vec<String>>()
-    } else {
-      vec!["some", "default", "messages", "ok"]
-        .into_iter() // allocations!
-        .map(String::from) // allocations!
-        .collect()
     };
 
     println!("initial: {:?}", messages);
 
-    let coords: [Coord; 3] = [
-      Coord::new(2, 4),
-      Coord::new(2, 4 + 14 + 4),
-      Coord::new(2, 4 + 14 + 4 + 14 + 4),
-    ];
+    let coords = vec![0, 1, 2, 3].iter().map(|line|
+      Coord::new(2, 4 + (line * (14 + 4)))
+    ).collect::<Vec<Coord>>();
 
     let mut render_start;
     let mut last_render_time = Duration::new(0, 1);
 
     loop {
         render_start = Instant::now();
-        while messages.iter().count() > 3 {
+        while messages.iter().count() > coords.iter().count() {
             messages.pop();
-            display.reset(&mut delay).expect("error resetting display");
-            display.clear(Color::White);
-            display.draw(
-              ProFont14Point::render_str(&messages[0])
-              .with_stroke(Some(Color::Black))
-              .with_fill(Some(Color::White))
-              .translate(coords[0])
-              .into_iter(),
-            );
-            display.draw(
-              ProFont14Point::render_str(&messages[1])
-              .with_stroke(Some(Color::Black))
-              .with_fill(Some(Color::White))
-              .translate(coords[1])
-              .into_iter(),
-            );
-            display.draw(
-              ProFont14Point::render_str(&messages[2])
-              .with_stroke(Some(Color::Black))
-              .with_fill(Some(Color::White))
-              .translate(coords[2])
-              .into_iter(),
-            );
-            let pretty_time = format!(" {} seconds", last_render_time.as_secs().to_string());
-            display.draw(
-              ProFont14Point::render_str(&pretty_time)
-              .with_stroke(Some(Color::White))
-              .with_fill(Some(Color::Black))
-              .translate(Coord::new(84, 84))
-              .into_iter(),
-            );
-            display.update(&mut delay).expect("error updating display");
-            println!("Update...");
         }
+
+        display.reset(&mut delay).expect("error resetting display");
+        display.clear(Color::White);
+
+        for (message, &coord) in messages.iter().zip(coords.iter()) {
+            println!("{:?}: `{}`", coord, message);
+            display.draw(
+              ProFont14Point::render_str(message)
+              .with_stroke(Some(Color::Black))
+              .with_fill(Some(Color::White))
+              .translate(coord)
+              .into_iter(),
+            );
+        }
+        let pretty_time = format!(" {} seconds", last_render_time.as_secs().to_string());
+        display.draw(
+          ProFont14Point::render_str(&pretty_time)
+          .with_stroke(Some(Color::White))
+          .with_fill(Some(Color::Black))
+          .translate(Coord::new(100, 90))
+          .into_iter(),
+        );
+        display.update(&mut delay).expect("error updating display");
+        println!("Update...");
 
         println!("Finished - going to sleep");
         display.deep_sleep()?;
 
-        print!("> ");
-        io::stdout().flush().unwrap();
-        last_render_time = Instant::now() - render_start;
+        if interactive {
+          print!("> ");
+          io::stdout().flush().unwrap();
+          last_render_time = Instant::now() - render_start;
 
-        let mut input = String::new();
-        match io::stdin().read_line(&mut input) {
-            Ok(_) => {
-              messages.insert(0, input.trim().to_string());
-            },
-            Err(error) => println!("error: {}", error),
+          let mut input = String::new();
+          match io::stdin().read_line(&mut input) {
+              Ok(_) => {
+                messages.insert(0, input.trim().to_string());
+              },
+              Err(error) => println!("error: {}", error),
+          }
+        } else {
+          return Ok(());
         }
     }
 }

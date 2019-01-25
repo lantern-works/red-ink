@@ -1,12 +1,12 @@
 TARGET := arm-unknown-linux-musleabihf
 BIN := target/$(TARGET)/release/red-ink
 
-.PHONY: all upload run
+.PHONY: all check upload run
 
 all: check upload run
 
 check:
-	docker run --rm -it -v "$(PWD)":/home/rust/src messense/rust-musl-cross:arm-musleabihf cargo check
+	cross check --target=$(TARGET)
 	
 $(BIN): src/main.rs
 	docker run --rm -it -v "$(PWD)":/home/rust/src messense/rust-musl-cross:arm-musleabihf cargo build --release
