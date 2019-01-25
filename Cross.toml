@@ -1,13 +1,5 @@
-[target.arm-unknown-linux-gnueabihf]
-image = "red-ink/arm-unknown-linux-gnueabihf"
-
-[target.arm-unknown-linux-gnueabihf.env]
-passthrough = [
-  "PKG_CONFIG_ALLOW_CROSS",
-]
-
 [target.arm-unknown-linux-musleabihf]
-image = "red-ink/arm-unknown-linux-musl"
+image = "red-ink/arm-unknown-linux-musleabihf"
 
 [target.arm-unknown-linux-musleabihf.env]
 passthrough = [

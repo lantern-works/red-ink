@@ -1,9 +1,9 @@
 # we customize rustcross to include the openssl libraries
 # so websockets will work
 
-FROM rustcross/arm-unknown-linux-gnueabihf
+FROM japaric/arm-unknown-linux-musleabi
 ENV PKG_CONFIG_ALLOW_CROSS=1
-RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y libssl-dev
+RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y curl libssl-dev
 
 # This is the directory where the ARM-compiled OpenSSL will live
 ENV INSTALL_DIR "/lib/precompiled-openssl-arm"

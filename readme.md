@@ -1,4 +1,4 @@
-websocket-to-eink display
+eink cli
 
 warning: this uses agressive timings for the eink display.
 you should manually do a full refresh once in a while, or risk burnin
