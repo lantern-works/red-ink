@@ -184,16 +184,16 @@ fn main() -> Result<(), std::io::Error> {
                 .into_iter(),
               );
           }
-        }
 
-        let pretty_time = format!(" {} seconds ", last_render_time.as_secs().to_string());
-        display.draw(
-          ProFont14Point::render_str(&pretty_time)
-          .with_stroke(Some(Color::White))
-          .with_fill(Some(Color::Black))
-          .translate(Coord::new((ROWS - (14 * 8)) as i32, (COLS - 14 - 2) as i32))
-          .into_iter(),
-        );
+          let pretty_time = format!(" {} seconds ", last_render_time.as_secs().to_string());
+          display.draw(
+            ProFont14Point::render_str(&pretty_time)
+            .with_stroke(Some(Color::White))
+            .with_fill(Some(Color::Black))
+            .translate(Coord::new((ROWS - (14 * 8)) as i32, (COLS - 14 - 2) as i32))
+            .into_iter(),
+          );
+        }
 
         display.update(&mut delay).expect("error updating display");
         println!("Update...");
