@@ -168,7 +168,7 @@ fn main() -> Result<(), std::io::Error> {
       Coord::new(2, 4 + (line * (14 + 4)))
     ).collect::<Vec<Coord>>();
 
-    let mut render_start = Instant::now();
+    let mut render_start;
     let mut last_render_time = Duration::new(0, 1);
 
     loop {
