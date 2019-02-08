@@ -20,3 +20,4 @@ cross compile from macos for pi zero
 build, upload, and run on the lantern
 
     make
+

@@ -3,6 +3,11 @@ use linux_embedded_hal::spidev::{self, SpidevOptions};
 use linux_embedded_hal::sysfs_gpio::Direction;
 use linux_embedded_hal::Delay;
 use linux_embedded_hal::{Pin, Spidev};
+use embedded_graphics::drawable::Pixel;
+use embedded_graphics::unsignedcoord::UnsignedCoord;
+
+extern crate bmp;
+use bmp::consts::BLACK;
 
 extern crate ssd1675;
 use ssd1675::{Builder, Color, Dimensions, Display, GraphicDisplay, Rotation};
@@ -129,7 +134,6 @@ fn main() -> Result<(), std::io::Error> {
         .collect::<Vec<String>>()
     };
 
-    println!("initial: {:?}", messages);
 
     let coords = vec![0, 1, 2, 3].iter().map(|line|
       Coord::new(2, 4 + (line * (14 + 4)))
@@ -147,16 +151,33 @@ fn main() -> Result<(), std::io::Error> {
         display.reset(&mut delay).expect("error resetting display");
         display.clear(Color::White);
 
-        for (message, &coord) in messages.iter().zip(coords.iter()) {
-            println!("{:?}: `{}`", coord, message);
-            display.draw(
-              ProFont14Point::render_str(message)
-              .with_stroke(Some(Color::Black))
-              .with_fill(Some(Color::White))
-              .translate(coord)
-              .into_iter(),
-            );
+        if let Some(bitmap) = env::args().find(|arg| arg.ends_with("bmp")) {
+          let img = bmp::open(bitmap).unwrap_or_else(|e| {
+            panic!("Failed to open: {}", e);
+          });
+          let colors = img.coordinates()
+            .map(|(x, y)|  {
+              let color = match img.get_pixel(x, y) {
+                BLACK => Color::Black,
+                _ => Color::White
+              };
+              return Pixel(UnsignedCoord::new(x, y), color)
+            })
+            .collect::<Vec<_>>();
+          display.draw(colors.into_iter());
+        } else {
+          for (message, &coord) in messages.iter().zip(coords.iter()) {
+              println!("{:?}: `{}`", coord, message);
+              display.draw(
+                ProFont14Point::render_str(message)
+                .with_stroke(Some(Color::Black))
+                .with_fill(Some(Color::White))
+                .translate(coord)
+                .into_iter(),
+              );
+          }
         }
+
         let pretty_time = format!(" {} seconds ", last_render_time.as_secs().to_string());
         display.draw(
           ProFont14Point::render_str(&pretty_time)
@@ -165,6 +186,7 @@ fn main() -> Result<(), std::io::Error> {
           .translate(Coord::new((ROWS - (14 * 8)) as i32, (COLS - 14 - 2) as i32))
           .into_iter(),
         );
+
         display.update(&mut delay).expect("error updating display");
         println!("Update...");
 
