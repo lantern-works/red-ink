@@ -98,13 +98,21 @@ fn main() -> Result<(), std::io::Error> {
 
     let mut black_buffer = [0u8; ROWS as usize * COLS as usize / 8];
     let mut color_buffer = [0u8; ROWS as usize * COLS as usize / 8];
+
+    let LUT = {
+      if env::args().find(|arg| arg.ends_with("bmp")).is_some() {
+        LUT_YELLOW.clone()
+        } else {
+        LUT_FAST_YELLOW.clone()
+      }
+    };
     let config = Builder::new()
         .dimensions(Dimensions {
             rows: ROWS,
             cols: COLS,
         })
         .rotation(Rotation::Rotate270)
-        .lut(&LUT_FAST_YELLOW)
+        .lut(&LUT)
         .yellow(&true)
         .build()
         .expect("invalid configuration");
